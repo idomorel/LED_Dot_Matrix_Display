@@ -2,6 +2,19 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 
+#include <SPI.h>
+#include <DMD.h>
+#include <TimerOne.h>
+#include "SystemFont5x7.h"
+#include "Arial_black_16.h"
+
+
+#define ROW 1
+#define COLUMN 1
+#define FONT Arial_Black_16
+
+
+
 IPAddress local_ip(192,168,1,1);
 IPAddress gateway(192,168,1,1);
 IPAddress subnet(255,255,255,0);
@@ -11,6 +24,8 @@ const char* WifiPass="******";
 String webPage,notice;
 
 ESP8266WebServer server(80);
+
+DMD led_module(ROW, COLUMN);
 
 
 const char htmlPage[]PROGMEM=R"=====(
@@ -35,8 +50,18 @@ void handlePostForm()
  server.send(200,"text/html",webPage);
 }
 
+void scan_module()
+{
+  led_module.scanDisplayBySPI();
+}
+
+
    void setup()
    {
+  Timer1.initialize(2000);
+  Timer1.attachInterrupt(scan_module);
+  led_module.clearScreen( true );
+
   Serial.begin(115200);
   delay(10);
   Serial.println();
@@ -65,6 +90,19 @@ Serial.println("HTTP Server Started");
 
 void loop() {
   server.handleClient();
+  led_module.selectFont(FONT);
+  led_module.drawMarquee("Welcome to Circuit Digest", 25, (32 * ROW), 0);
+  long start = millis();
+  long timming = start;
+  boolean flag = false;
+  while (!flag)
+  {
+    if ((timming + 20) < millis())
+    {
+      flag = led_module.stepMarquee(-1, 0);
+      timming = millis();
+    }
+  }
   // put your main code here, to run repeatedly:
 
 }
