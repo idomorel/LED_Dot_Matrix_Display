@@ -3,8 +3,8 @@
 #include <ESP8266mDNS.h>
 
 #include <SPI.h>
-#include <DMD.h>
-#include <TimerOne.h>
+#include <DMD2.h>
+//#include <TimerOne.h>
 #include "SystemFont5x7.h"
 #include "Arial_black_16.h"
 
@@ -25,7 +25,7 @@ String webPage,notice;
 
 ESP8266WebServer server(80);
 
-DMD led_module(ROW, COLUMN);
+DMD2 led_module(ROW, COLUMN);
 
 
 const char htmlPage[]PROGMEM=R"=====(
@@ -58,8 +58,8 @@ void scan_module()
 
    void setup()
    {
-  Timer1.initialize(2000);
-  Timer1.attachInterrupt(scan_module);
+  //Timer1.initialize(2000);
+  //Timer1.attachInterrupt(scan_module);
   led_module.clearScreen( true );
 
   Serial.begin(115200);
