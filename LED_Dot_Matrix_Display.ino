@@ -9,18 +9,17 @@
 #include "Arial_black_16.h"
 
 
-#define ROW 1
-#define COLUMN 1
+#define ROW 16
+#define COLUMN 32
 #define FONT Arial_Black_16
-
 
 
 IPAddress local_ip(192,168,1,1);
 IPAddress gateway(192,168,1,1);
 IPAddress subnet(255,255,255,0);
 
-const char* WifiName="*****";
-const char* WifiPass="******";
+const char* WifiName="TotallyNotAHacker";
+const char* WifiPass="12345678";
 bool flag = false;
 long start = 0;
 String webPage,notice;
@@ -105,7 +104,7 @@ void loop() {
     led_module.marqueeScrollX(1);
   }
 
-
+  delay(50);
   // long start = millis();
   // // long timming = start;
   // boolean flag = false;
