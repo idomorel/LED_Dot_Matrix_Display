@@ -22,6 +22,7 @@ const char* WifiName="TotallyNotAHacker";
 const char* WifiPass="12345678";
 bool flag = false;
 long start = 0;
+int num = 0;
 String webPage,notice;
 
 ESP8266WebServer server(80);
@@ -44,11 +45,14 @@ const char htmlPage[]PROGMEM=R"=====(
 
 void handlePostForm()
 {
- webPage=htmlPage;
+ Serial.println("Handler Reached");
+ //webPage=htmlPage;
+ Serial.println("Handler Reached 1");
  notice=server.arg("myText");
+  Serial.println("Read the Text");
  Serial.println("Text Received, contents:");
  Serial.println(notice);
- server.send(200,"text/html",webPage);
+ server.send(200,"text/html",htmlPage);
 }
 
 // void scan_module()
@@ -63,16 +67,19 @@ void handlePostForm()
     //Timer1.initialize(2000);
     //Timer1.attachInterrupt(scan_module);
     led_module.clearScreen();
-
+    
     Serial.begin(115200);
     delay(10);
     Serial.println();
     Serial.print("Connecting");
-    WiFi.softAP(WifiName, WifiPass);
+    WiFi.mode(WIFI_AP_STA);
     WiFi.softAPConfig(local_ip, gateway, subnet);
+    WiFi.softAP(WifiName, WifiPass);
+    
     delay(100);
     //WiFi.begin(WifiName,WifiPass);
     server.on("/postForm",handlePostForm);
+    server.on("/",handle_OnConnect);
     //while(WiFi.status()!= WL_CONNECTED)
     //{
     //delay(500);
@@ -85,25 +92,38 @@ void handlePostForm()
     //Serial.println(WiFi.localIP());
     Serial.println(notice);
     server.begin();
-    Serial.println("HTTP Server Started");    
+    Serial.println("HTTP Server Started");
+    notice = "Try";
+    Serial.println(Serial.println(WiFi.localIP()));
+    
     // put your setup code here, to run once:
 }
 
+void handle_OnConnect()
+{
+  Serial.println("Client Connected");
+  server.send(200, "text/html", htmlPage); 
+}
 
 void loop() {
+  num++;
+  //Serial.println("Loop Started");
   server.handleClient();
-  led_module.selectFont(FONT);
+  //led_module.selectFont(FONT);
   //led_module.drawMarquee("Sheduza!", 25, (32 * ROW), 0);
-  led_module.drawString(0, 0, notice);
+  //led_module.drawString(0, 0, notice);
   if(flag == false){
     start = millis();
     flag = true;
   }
   if(millis()-50 > start){
     start = millis();
-    led_module.marqueeScrollX(1);
+    //led_module.marqueeScrollX(1);
   }
 
+  //Serial.print("Loop number:  ");
+  //Serial.println(num);
+  Serial.println(notice);
   delay(50);
   // long start = millis();
   // // long timming = start;
