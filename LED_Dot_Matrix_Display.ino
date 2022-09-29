@@ -21,11 +21,13 @@ IPAddress subnet(255,255,255,0);
 
 const char* WifiName="*****";
 const char* WifiPass="******";
+bool flag = false;
+long start = 0;
 String webPage,notice;
 
 ESP8266WebServer server(80);
 
-DMD2 led_module(ROW, COLUMN);
+SPIDMD led_module(ROW, COLUMN);
 
 
 const char htmlPage[]PROGMEM=R"=====(
@@ -50,59 +52,73 @@ void handlePostForm()
  server.send(200,"text/html",webPage);
 }
 
-void scan_module()
-{
-  led_module.scanDisplayBySPI();
-}
+// void scan_module()
+// {
+//   led_module.scanDisplayBySPI();
+// }
 
 
    void setup()
    {
-  //Timer1.initialize(2000);
-  //Timer1.attachInterrupt(scan_module);
-  led_module.clearScreen( true );
+    led_module.begin();
+    //Timer1.initialize(2000);
+    //Timer1.attachInterrupt(scan_module);
+    led_module.clearScreen();
 
-  Serial.begin(115200);
-  delay(10);
-  Serial.println();
-  Serial.print("Connecting");
-  WiFi.softAP(WifiName, WifiPass);
-  WiFi.softAPConfig(local_ip, gateway, subnet);
-  delay(100);
-  //WiFi.begin(WifiName,WifiPass);
-  server.on("/postForm",handlePostForm);
-  //while(WiFi.status()!= WL_CONNECTED)
-  //{
+    Serial.begin(115200);
+    delay(10);
+    Serial.println();
+    Serial.print("Connecting");
+    WiFi.softAP(WifiName, WifiPass);
+    WiFi.softAPConfig(local_ip, gateway, subnet);
+    delay(100);
+    //WiFi.begin(WifiName,WifiPass);
+    server.on("/postForm",handlePostForm);
+    //while(WiFi.status()!= WL_CONNECTED)
+    //{
     //delay(500);
     //Serial.print(".");
     //} 
- Serial.println("");
- Serial.println("Wi-Fi Connected");
- Serial.println("IP Address is:");
- Serial.println("192.168.1.1");
- //Serial.println(WiFi.localIP());
-   Serial.println(notice);
-server.begin();
-Serial.println("HTTP Server Started");    
-  // put your setup code here, to run once:
+    Serial.println("");
+    Serial.println("Wi-Fi Connected");
+    Serial.println("IP Address is:");
+    Serial.println("192.168.1.1");
+    //Serial.println(WiFi.localIP());
+    Serial.println(notice);
+    server.begin();
+    Serial.println("HTTP Server Started");    
+    // put your setup code here, to run once:
 }
 
 
 void loop() {
   server.handleClient();
   led_module.selectFont(FONT);
-  led_module.drawMarquee("Welcome to Circuit Digest", 25, (32 * ROW), 0);
-  long start = millis();
-  long timming = start;
-  boolean flag = false;
-  while (!flag)
-  {
-    if ((timming + 20) < millis())
-    {
-      flag = led_module.stepMarquee(-1, 0);
-      timming = millis();
-    }
+  //led_module.drawMarquee("Sheduza!", 25, (32 * ROW), 0);
+  led_module.drawString(0, 0, notice);
+  if(flag == false){
+    start = millis();
+    flag = true;
   }
+  if(millis()-50 > start){
+    start = millis();
+    led_module.marqueeScrollX(1);
+  }
+
+
+  // long start = millis();
+  // // long timming = start;
+  // boolean flag = false;
+  // // while(!flag)
+  // // {
+  //   if ((start + 20) < millis())
+  //   {
+  //     led_module.marqueeScrollX(1);
+  //     flag = true;
+  //     stepped = true;
+  //     start = millis();
+  //   }
+  // }
   // put your main code here, to run repeatedly:
 
 }
