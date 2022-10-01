@@ -18,7 +18,7 @@ IPAddress local_ip(192,168,1,1);
 IPAddress gateway(192,168,1,1);
 IPAddress subnet(255,255,255,0);
 
-const char* WifiName="TotallyNotAHacker";
+const char* WifiName="Yell \"COCK\" for Password";
 const char* WifiPass="12345678";
 bool flag = false;
 long start = 0;
@@ -109,11 +109,12 @@ void loop() {
   num++;
   //Serial.println("Loop Started");
   server.handleClient();
-  //led_module.selectFont(FONT);
+  led_module.selectFont(FONT);
   //led_module.drawMarquee("Sheduza!", 25, (32 * ROW), 0);
-  //led_module.drawString(0, 0, notice);
+  
   if(flag == false){
     start = millis();
+    led_module.drawString(0, 0, notice);
     flag = true;
   }
   if(millis()-50 > start){
