@@ -7,10 +7,12 @@
 //#include <TimerOne.h>
 #include "SystemFont5x7.h"
 #include "Arial_black_16.h"
+#include "Droid_Sans_24.h"
 
 
-#define ROW 16
-#define COLUMN 32
+#define ROW 3
+#define COLUMN 2
+// #define FONT Droid_Sans_24
 #define FONT Arial_Black_16
 
 
@@ -18,16 +20,22 @@ IPAddress local_ip(192,168,1,1);
 IPAddress gateway(192,168,1,1);
 IPAddress subnet(255,255,255,0);
 
-const char* WifiName="Yell \"COCK\" for Password";
+const char* WifiName="DisplayMatrix";
 const char* WifiPass="12345678";
+char MESSAGE[255]; //Store the message
+
 bool flag = false;
+//bool textChange = false;
 long start = 0;
 int num = 0;
 String webPage,notice;
+int posX, pixelLength;
 
 ESP8266WebServer server(80);
 
-SPIDMD led_module(ROW, COLUMN);
+//SPIDMD led_module(ROW, COLUMN);
+SPIDMD led_module(ROW , COLUMN, 5, 16, 2, 12); 
+DMD_TextBox box(led_module, 0, 0);
 
 
 const char htmlPage[]PROGMEM=R"=====(
@@ -49,6 +57,11 @@ void handlePostForm()
  //webPage=htmlPage;
  Serial.println("Handler Reached 1");
  notice=server.arg("myText");
+ int msg_len = notice.length() + 1; 
+ MESSAGE[msg_len];
+ notice.toCharArray(MESSAGE, msg_len);
+ pixelLength = notice.length()*14;
+ flag = false;
   Serial.println("Read the Text");
  Serial.println("Text Received, contents:");
  Serial.println(notice);
@@ -60,43 +73,48 @@ void handlePostForm()
 //   led_module.scanDisplayBySPI();
 // }
 
-
-   void setup()
-   {
-    led_module.begin();
-    //Timer1.initialize(2000);
-    //Timer1.attachInterrupt(scan_module);
-    led_module.clearScreen();
+void setup()
+{
+  led_module.begin();
+  //Timer1.initialize(2000);
+  //Timer1.attachInterrupt(scan_module);
+  led_module.clearScreen();
     
-    Serial.begin(115200);
-    delay(10);
-    Serial.println();
-    Serial.print("Connecting");
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.softAPConfig(local_ip, gateway, subnet);
-    WiFi.softAP(WifiName, WifiPass);
+  Serial.begin(115200);
+  delay(10);
+  Serial.println();
+  Serial.print("Connecting");
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.softAPConfig(local_ip, gateway, subnet);
+  WiFi.softAP(WifiName, WifiPass);
     
-    delay(100);
-    //WiFi.begin(WifiName,WifiPass);
-    server.on("/postForm",handlePostForm);
-    server.on("/",handle_OnConnect);
-    //while(WiFi.status()!= WL_CONNECTED)
-    //{
-    //delay(500);
-    //Serial.print(".");
-    //} 
-    Serial.println("");
-    Serial.println("Wi-Fi Connected");
-    Serial.println("IP Address is:");
-    Serial.println("192.168.1.1");
-    //Serial.println(WiFi.localIP());
-    Serial.println(notice);
-    server.begin();
-    Serial.println("HTTP Server Started");
-    notice = "Try";
-    Serial.println(Serial.println(WiFi.localIP()));
-    
-    // put your setup code here, to run once:
+  delay(50);
+  //WiFi.begin(WifiName,WifiPass);
+  server.on("/postForm",handlePostForm);
+  server.on("/",handle_OnConnect);
+  //while(WiFi.status()!= WL_CONNECTED)
+  //{
+  //delay(500);
+  //Serial.print(".");
+  //} 
+  Serial.println("");
+  Serial.println("Wi-Fi Connected");
+  Serial.println("IP Address is:");
+  Serial.println("192.168.1.1");
+  //Serial.println(WiFi.localIP());
+  Serial.println(notice);
+  server.begin();
+  Serial.println("HTTP Server Started");
+  notice = "Try";
+  //pixelLength = notice.length()*14;
+  pixelLength = 0;
+  for(int i = 0; i < notice.length(); i++){
+    int asciiVal = (int)notice[i];
+    pixelLength += (int)Arial_Black_16[asciiVal];
+  }
+  Serial.println(Serial.println(WiFi.localIP()));
+  //Arial_Black_16[38]
+  // put your setup code here, to run once:
 }
 
 void handle_OnConnect()
@@ -104,6 +122,16 @@ void handle_OnConnect()
   Serial.println("Client Connected");
   server.send(200, "text/html", htmlPage); 
 }
+
+// void Scroll(){
+//   const char *next = MESSAGE;
+//   while(*next) {
+//     Serial.print(*next);
+//     box.print(*next);
+//     delay(200);
+//     next++;
+//   }
+// }
 
 void loop() {
   num++;
@@ -113,19 +141,39 @@ void loop() {
   //led_module.drawMarquee("Sheduza!", 25, (32 * ROW), 0);
   
   if(flag == false){
+    box.clear();
     start = millis();
-    led_module.drawString(0, 0, notice);
+    //led_module.clearScreen();
+    //led_module.drawString(posX, 4, notice);
+    //led_module.drawString(posX, 0, notice);
+    //box.print("        ");
+    box.print(notice);
+    //oldNotice = notice;
     flag = true;
+    posX = 0;
   }
-  if(millis()-50 > start){
+  
+  if(millis()-100 > start){
     start = millis();
-    //led_module.marqueeScrollX(1);
+    //led_module.clearScreen();
+    if(posX == (pixelLength + 96)* -1){
+       posX = 0;
+       flag = false;
+    }
+    //posX--;
+    //led_module.drawString(posX, 4, notice);
+    //led_module.drawString(posX, 0, notice);
+    //led_module.marqueeScrollX(-1);
+    //box.print(notice);
+    box.scrollX(-1);
+    posX--;
   }
 
   //Serial.print("Loop number:  ");
   //Serial.println(num);
   Serial.println(notice);
-  delay(50);
+  
+  //delay(50);
   // long start = millis();
   // // long timming = start;
   // boolean flag = false;
